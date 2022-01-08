@@ -30,8 +30,7 @@ bool Epoll::EpollHandler::epoll_add(int32_t fd, uint32_t events) {
 }
 
 bool Epoll::EpollHandler::epoll_del(int32_t fd) {
-	if (epoll_ctl(this->epfd, EPOLL_CTL_DEL, fd, NULL) < 0) return false;
-	return true;
+	return epoll_ctl(this->epfd, EPOLL_CTL_DEL, fd, NULL) < 0 ? false : true;
 }
 
 int32_t Epoll::EpollHandler::wait_events(void) {
@@ -104,7 +103,8 @@ void Server::TCPServer::recv_message(int32_t conn) {
 		this->close_connection(conn);
 		return;
 	}
-	
+
+	// parse header (uint32_t representing the size of the full message)	
 	if (recvd == sizeof(uint32_t)) {
 		uint32_t len = atoi(len_str);
 		std::vector<char> buffer(len + 1, 0x00);
