@@ -134,7 +134,7 @@ void Server::TCPServer::recv_message(int32_t conn) {
 		// removing the null byte
 		payload.erase(std::find(payload.begin(), payload.end(), '\0'), payload.end()); 
 		// printing to screen
-		std::cout << "[+] Received: " << payload << std::endl;
+		std::cout << "[+] Received: " << payload << " (from fd: " << conn << ")" << std::endl;
 	}
 
 }
