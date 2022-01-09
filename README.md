@@ -8,8 +8,17 @@ Boilerplate of a TCP Server written in C++ using the epoll API.
 
 ## Run
 
+Server:
+
 ```
 bash build.sh
+./bin/server
+```
+
+Client (spawns 10 concurrent clients):
+
+```
+python src/client.py
 ```
 
 ## Streaming process
