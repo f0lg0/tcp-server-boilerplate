@@ -13,11 +13,11 @@ namespace Epoll {
 			const uint32_t timeout = 3000;
 			std::vector<struct epoll_event> events;
 		public:
-			EpollHandler(void);
+			EpollHandler();
 			bool epoll_add(int32_t fd, uint32_t events);
 			bool epoll_del(int32_t fd);
-			int32_t wait_events(void);
-			std::vector<struct epoll_event>* get_events_vector(void);
+			int32_t wait_events();
+			const std::vector<struct epoll_event>& get_events_vector() const;
 	};
 };
 
@@ -31,13 +31,13 @@ namespace Server {
 
 			Epoll::EpollHandler epoll_handler;
 
-			bool accept_new_client(void);
+			bool accept_new_client();
 			void handle_client_event(int32_t conn, uint32_t events);
 			void recv_message(int32_t conn);
 			void close_connection(int32_t conn);
 		public:
-			TCPServer(void);
-			~TCPServer(void);
-			void listen_conns(void);
+			TCPServer();
+			~TCPServer();
+			void listen_conns();
 	};
 };

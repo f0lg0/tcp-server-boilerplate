@@ -10,7 +10,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 
-Epoll::EpollHandler::EpollHandler(void) {
+Epoll::EpollHandler::EpollHandler() {
 	this->epfd = epoll_create(this->nthreads);
 	if (this->epfd < 0) {
 		std::cerr << "[!] Failed to create epoll, exiting..." << std::endl;
@@ -33,15 +33,15 @@ bool Epoll::EpollHandler::epoll_del(int32_t fd) {
 	return epoll_ctl(this->epfd, EPOLL_CTL_DEL, fd, NULL) < 0 ? false : true;
 }
 
-int32_t Epoll::EpollHandler::wait_events(void) {
+int32_t Epoll::EpollHandler::wait_events() {
 	return epoll_wait(this->epfd, &(this->events[0]), this->max_events, this->timeout);
 }
 
-std::vector<struct epoll_event>* Epoll::EpollHandler::get_events_vector(void) {
-	return &(this->events);
+const std::vector<struct epoll_event>& Epoll::EpollHandler::get_events_vector() const {
+	return this->events;
 }
 
-Server::TCPServer::TCPServer(void) {
+Server::TCPServer::TCPServer() {
 	this->sfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
 	if (this->sfd == -1) {
 		std::cerr << "[!] Erro while creating socket, exiting..." << std::endl;
@@ -59,7 +59,7 @@ Server::TCPServer::TCPServer(void) {
 	}
 }
 
-Server::TCPServer::~TCPServer(void) {
+Server::TCPServer::~TCPServer() {
 	close(this->sfd);
 }
 
@@ -73,7 +73,7 @@ static unsigned short get_in_port(struct sockaddr *sa) {
 	return ((struct sockaddr_in*)sa)->sin_port;
 }
 
-bool Server::TCPServer::accept_new_client(void) {
+bool Server::TCPServer::accept_new_client() {
 	sockaddr_storage clients;
 	socklen_t clients_size = sizeof(clients);
 
@@ -130,11 +130,11 @@ void Server::TCPServer::recv_message(int32_t conn) {
 		}
 
 		// buffer now contains the complete message
-		std::string payload = std::string(buffer.begin(), buffer.end());
-		// removing the null byte
-		payload.erase(std::find(payload.begin(), payload.end(), '\0'), payload.end()); 
-		// printing to screen
-		std::cout << "[+] Received: " << payload << " (from fd: " << conn << ")" << std::endl;
+		std::cout << "[+] Received: ";
+		for (auto c : buffer) {
+			std::cout << c;
+		}
+		std::cout << " (from fd: " << conn << ")" << std::endl;
 	}
 
 }
@@ -151,7 +151,7 @@ void Server::TCPServer::handle_client_event(int32_t conn, uint32_t events) {
 	this->recv_message(conn);
 }
 
-void Server::TCPServer::listen_conns(void) {
+void Server::TCPServer::listen_conns() {
 	if (listen(this->sfd, this->backlog) < 0) {
 		std::cerr << "[!] Error while listening on specified address (0.0.0.0:1234), exiting..." << std::endl;
 		exit(1);
@@ -182,7 +182,7 @@ void Server::TCPServer::listen_conns(void) {
 			break;
 		}
 
-		std::vector<struct epoll_event> events = *(this->epoll_handler.get_events_vector());
+		std::vector<struct epoll_event> events = this->epoll_handler.get_events_vector();
 		for (uint32_t i = 0; i < events_ret; i++) {
 			if (events[i].data.fd == this->sfd) {
 				// new client is connecting to us
